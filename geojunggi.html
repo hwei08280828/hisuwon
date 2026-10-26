@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>거중기로 성돌 들어 올리기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F4F6F1; --surface:#FFFFFF; --ink:#1E2B33; --muted:#5A6870; --line:#D9DED6;
+  --teal:#2B6B63; --ochre:#B8862E; --red:#B4432F; --wood:#8A5A34; --stone:#9AA3A0; --sky:#E6EEEC;
+  --ok:#2B6B63; --warn:#B4432F;
+  color-scheme:light; box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#141B1E; --surface:#1D262A; --ink:#E8ECE6; --muted:#A3AEA9; --line:#2E3A3F;
+    --teal:#7DBCB1; --ochre:#D9AE5C; --red:#E07A63; --wood:#B98457; --stone:#7E8986; --sky:#1A2427;
+    --ok:#7DBCB1; --warn:#E07A63; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#141B1E; --surface:#1D262A; --ink:#E8ECE6; --muted:#A3AEA9; --line:#2E3A3F;
+  --teal:#7DBCB1; --ochre:#D9AE5C; --red:#E07A63; --wood:#B98457; --stone:#7E8986; --sky:#1A2427;
+  --ok:#7DBCB1; --warn:#E07A63; color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);word-break:keep-all;
+  font-family:"Gowun Dodum","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;font-size:17px;line-height:1.65}
+main{max-width:980px;margin:0 auto;padding:24px 20px 56px}
+h1,h2{font-family:"Gowun Batang","Nanum Myeongjo","AppleMyungjo",serif;line-height:1.3;margin:0}
+h1{font-size:1.9rem}
+.lead{color:var(--muted);margin:8px 0 0;max-width:62ch}
+.grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:22px;margin-top:22px;align-items:start}
+@media (max-width:760px){.grid{grid-template-columns:1fr}}
+.stage{background:var(--sky);border-radius:16px;overflow:hidden}
+.stage svg{display:block;width:100%;height:auto}
+.panel{display:flex;flex-direction:column;gap:18px}
+.ctrl h2{font-size:1.05rem;margin-bottom:8px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{flex:1 1 0;min-width:44px;padding:9px 6px;border-radius:10px;border:1.5px solid var(--line);
+  background:var(--surface);color:var(--ink);font:inherit;cursor:pointer}
+.seg button[aria-pressed="true"]{border-color:var(--teal);background:var(--teal);color:var(--bg);font-weight:700}
+button:focus-visible{outline:3px solid var(--ochre);outline-offset:2px}
+.pull{width:100%;padding:18px;border-radius:14px;border:none;background:var(--red);color:#fff;
+  font-family:"Gowun Batang",serif;font-size:1.35rem;font-weight:700;cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none}
+.pull:active,.pull.on{filter:brightness(.9)}
+.pull:disabled{opacity:.45;cursor:default}
+.reset{background:none;border:none;color:var(--teal);font:inherit;text-decoration:underline;cursor:pointer;padding:4px 0}
+.msg{min-height:3.3em;padding:12px 14px;border-radius:12px;background:var(--surface);border-left:5px solid var(--teal)}
+.msg.warn{border-left-color:var(--warn)}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:var(--surface);border-radius:12px;padding:10px 12px}
+.stat b{display:block;font-family:"Gowun Batang",serif;font-size:1.45rem;line-height:1.2}
+.stat span{color:var(--muted);font-size:.9rem}
+section.log{margin-top:30px}
+.tablewrap{overflow-x:auto;margin-top:10px}
+table{border-collapse:collapse;width:100%;min-width:480px;background:var(--surface);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;text-align:center;border-bottom:1px solid var(--line)}
+th{font-family:"Gowun Batang",serif;color:var(--teal)}
+.empty td{color:var(--muted)}
+.think{margin-top:30px;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:760px){.think{grid-template-columns:1fr}}
+.card{background:var(--surface);border-radius:14px;padding:16px 18px}
+.card h2{font-size:1.1rem;margin-bottom:6px;color:var(--ochre)}
+.card p,.card ol{margin:0}
+.card ol{padding-left:1.2em}
+</style>
+</head>
+<body>
+<main>
+  <h1>거중기로 성돌 들어 올리기</h1>
+  <p class="lead">정약용은 수원화성을 쌓을 때 무거운 돌을 적은 힘으로 들어 올리려고 거중기를 만들었어요. 움직도르래의 수와 사람 수를 바꿔 가며 성돌을 성벽 위(2m)까지 올려 보세요.</p>
+
+  <div class="grid">
+    <div class="stage"><svg id="svg" viewBox="0 0 420 380" role="img" aria-label="거중기 그림"></svg></div>
+
+    <div class="panel">
+      <div class="ctrl"><h2>돌의 무게</h2><div class="seg" id="segStone"></div></div>
+      <div class="ctrl"><h2>움직도르래 수</h2><div class="seg" id="segPulley"></div></div>
+      <div class="ctrl"><h2>줄을 당기는 사람 (한 사람 = 50kg의 힘)</h2><div class="seg" id="segPeople"></div></div>
+      <div class="msg" id="msg" aria-live="polite"></div>
+      <button class="pull" id="pull">꾹 눌러서 줄 당기기</button>
+      <button class="reset" id="reset">돌 내려놓고 다시 하기</button>
+      <div class="stats">
+        <div class="stat"><b id="sForce">-</b><span>줄에 필요한 힘</span></div>
+        <div class="stat"><b id="sNeed">-</b><span>필요한 사람 수</span></div>
+        <div class="stat"><b id="sRope">0m</b><span>당긴 줄의 길이</span></div>
+        <div class="stat"><b id="sLift">0m</b><span>돌이 올라간 높이</span></div>
+      </div>
+    </div>
+  </div>
+
+  <section class="log">
+    <h2>실험 기록</h2>
+    <p class="lead">돌을 성벽 위까지 올리면 결과가 자동으로 적혀요.</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>돌 무게</th><th>움직도르래</th><th>필요한 힘</th><th>사람 수</th><th>당긴 줄 길이</th></tr></thead>
+      <tbody id="log"><tr class="empty"><td colspan="5">아직 기록이 없어요.</td></tr></tbody>
+    </table></div>
+  </section>
+
+  <div class="think">
+    <div class="card"><h2>생각해 보기</h2><ol>
+      <li>움직도르래가 늘어나면 필요한 힘은 어떻게 변하나요?</li>
+      <li>그 대신 줄은 얼마나 더 당겨야 했나요?</li>
+      <li>힘을 덜 들이는 대신 무엇을 더 들여야 할까요?</li></ol></div>
+    <div class="card"><h2>정약용과 거중기</h2>
+      <p>정약용은 정조의 부탁을 받고 서양 기계를 소개한 책을 참고해 거중기를 설계했어요. 진짜 거중기에는 도르래 말고도 줄을 감는 물레가 있어서 힘이 더 적게 들었어요. 거중기 덕분에 화성 공사는 예정보다 훨씬 빨리 끝날 수 있었어요.</p></div>
+  </div>
+</main>
+
+<script>
+const STONES=[{kg:200,label:"작은 돌 200kg"},{kg:400,label:"성돌 400kg"},{kg:800,label:"큰 돌 800kg"}];
+const PULLEYS=[0,1,2,3,4];
+const PEOPLE=[1,2,3,4,6,8,10];
+const STRENGTH=50, TARGET=2, ROPE_SPEED=1.6; // m of rope per second
+let st={kg:400,n:0,p:2,lift:0,rope:0,done:false};
+let holding=false,last=0;
+
+function seg(id,items,key,fmt){
+  const el=document.getElementById(id);
+  el.innerHTML=items.map(v=>`<button type="button" data-v="${v.kg??v}">${fmt(v)}</button>`).join("");
+  el.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
+    st[key]=Number(b.dataset.v); resetLift(); render();});
+}
+seg("segStone",STONES,"kg",s=>s.label);
+seg("segPulley",PULLEYS,"n",n=>n===0?"없음":n+"개");
+seg("segPeople",PEOPLE,"p",n=>n+"명");
+
+const ma=()=>st.n===0?1:2*st.n;
+const force=()=>st.kg/ma();
+const need=()=>Math.ceil(force()/STRENGTH-1e-9);
+const enough=()=>st.p*STRENGTH>=force()-1e-9;
+
+function resetLift(){st.lift=0;st.rope=0;st.done=false;}
+
+function draw(){
+  const n=st.n, G=340, scale=92; // px per m
+  const y0=G-40-st.lift*scale; // stone top
+  const beamY=40;
+  const cx=170;
+  const blockY=y0-30;
+  let s=`<rect x="0" y="${G}" width="420" height="40" fill="var(--line)"/>`;
+  // wall
+  s+=`<rect x="300" y="${G-TARGET*scale}" width="120" height="${TARGET*scale}" fill="var(--stone)" opacity=".55"/>`;
+  for(let r=0;r<4;r++)for(let c=0;c<3;c++)s+=`<rect x="${302+c*40+(r%2)*20-((r%2)&&c==2?20:0)}" y="${G-TARGET*scale+r*TARGET*scale/4+2}" width="${(r%2)&&c==2?18:38}" height="${TARGET*scale/4-4}" fill="none" stroke="var(--bg)" stroke-width="2"/>`;
+  s+=`<line x1="290" x2="420" y1="${G-TARGET*scale}" y2="${G-TARGET*scale}" stroke="var(--red)" stroke-width="2" stroke-dasharray="6 4"/>`;
+  s+=`<text x="296" y="${G-TARGET*scale-8}" font-size="13" fill="var(--red)" font-family="Gowun Dodum">성벽 높이 2m</text>`;
+  // frame
+  s+=`<path d="M70 ${G} L110 ${beamY} M270 ${G} L230 ${beamY}" stroke="var(--wood)" stroke-width="10" stroke-linecap="round"/>`;
+  s+=`<rect x="90" y="${beamY-12}" width="160" height="14" rx="4" fill="var(--wood)"/>`;
+  // ropes
+  const k=Math.max(1,2*n), span=Math.min(120,24*k), xs=[];
+  for(let i=0;i<k;i++)xs.push(cx-span/2+(k===1?span/2:i*span/(k-1)));
+  if(n===0){
+    s+=`<line x1="${cx}" y1="${beamY+8}" x2="${cx}" y2="${y0}" stroke="var(--ochre)" stroke-width="3"/>`;
+    s+=`<circle cx="${cx}" cy="${beamY+8}" r="11" fill="var(--surface)" stroke="var(--ink)" stroke-width="3"/>`;
+  }else{
+    xs.forEach(x=>s+=`<line x1="${x}" y1="${beamY+8}" x2="${x}" y2="${blockY}" stroke="var(--ochre)" stroke-width="2.5"/>`);
+    // fixed pulleys over pairs (top), movable pulleys (bottom)
+    for(let i=0;i<n;i++){const a=xs[2*i],b=xs[2*i+1];
+      s+=`<circle cx="${(a+b)/2}" cy="${blockY}" r="${Math.max(6,(b-a)/2)}" fill="var(--surface)" stroke="var(--teal)" stroke-width="3"/>`;}
+    for(let i=0;i<n;i++){const a=xs[2*i+1],b=xs[2*i+2]??xs[2*i+1]+12;
+      s+=`<circle cx="${(a+b)/2}" cy="${beamY+8}" r="${Math.max(6,(b-a)/2)}" fill="var(--surface)" stroke="var(--ink)" stroke-width="3"/>`;}
+    s+=`<rect x="${cx-span/2-10}" y="${blockY+6}" width="${span+20}" height="8" rx="3" fill="var(--teal)"/>`;
+    s+=`<line x1="${cx}" y1="${blockY+14}" x2="${cx}" y2="${y0}" stroke="var(--teal)" stroke-width="3"/>`;
+  }
+  // pull rope to people
+  const lastX=n===0?cx:xs[k-1]+6;
+  s+=`<path d="M${lastX} ${beamY+8} L262 ${beamY+2} L262 ${beamY+20} L 40 ${G-30}" fill="none" stroke="var(--ochre)" stroke-width="3"/>`;
+  s+=`<circle cx="262" cy="${beamY+10}" r="9" fill="var(--surface)" stroke="var(--ink)" stroke-width="3"/>`;
+  // people
+  for(let i=0;i<Math.min(st.p,10);i++){const px=18+(i%5)*13,py=G-8-Math.floor(i/5)*26;
+    s+=`<circle cx="${px}" cy="${py-22}" r="5" fill="var(--red)"/><path d="M${px} ${py-16} L${px} ${py-4} M${px} ${py-4} L${px-5} ${py+6} M${px} ${py-4} L${px+5} ${py+6} M${px} ${py-12} L${px+8} ${py-16}" stroke="var(--red)" stroke-width="3" stroke-linecap="round"/>`;}
+  // stone
+  const w=st.kg===200?60:st.kg===400?80:104, h=st.kg===200?32:40;
+  s+=`<rect x="${cx-w/2}" y="${y0}" width="${w}" height="${h}" rx="6" fill="var(--stone)" stroke="var(--ink)" stroke-width="2"/>`;
+  s+=`<text x="${cx}" y="${y0+h/2+5}" text-anchor="middle" font-size="14" fill="var(--ink)" font-family="Gowun Batang" font-weight="700">${st.kg}kg</text>`;
+  document.getElementById("svg").innerHTML=s;
+}
+
+function fmt(m){return (Math.round(m*10)/10).toString().replace(/\.0$/,"")+"m"}
+function render(){
+  for(const [id,key] of [["segStone","kg"],["segPulley","n"],["segPeople","p"]])
+    document.querySelectorAll(`#${id} button`).forEach(b=>b.setAttribute("aria-pressed",Number(b.dataset.v)===st[key]));
+  document.getElementById("sForce").textContent=Math.round(force())+"kg";
+  document.getElementById("sNeed").textContent=need()+"명";
+  document.getElementById("sRope").textContent=fmt(st.rope);
+  document.getElementById("sLift").textContent=fmt(st.lift);
+  const msg=document.getElementById("msg"), pull=document.getElementById("pull");
+  msg.classList.toggle("warn",!enough());
+  if(st.done) msg.textContent=`성공! 줄을 ${fmt(st.rope)} 당겨서 돌을 2m 올렸어요. 도르래 수를 바꿔서 다시 해 보세요.`;
+  else if(!enough()) msg.textContent=`힘이 모자라요. ${st.p}명은 ${st.p*STRENGTH}kg까지 당길 수 있는데, ${Math.round(force())}kg이 필요해요. 도르래를 늘리거나 사람을 더 불러 보세요.`;
+  else msg.textContent=`${st.p}명이면 충분해요! 버튼을 꾹 누르고 있으면 줄을 당겨요.`;
+  pull.disabled=st.done;
+  draw();
+}
+
+function logRow(){
+  const tb=document.getElementById("log"); tb.querySelector(".empty")?.remove();
+  const tr=document.createElement("tr");
+  tr.innerHTML=`<td>${st.kg}kg</td><td>${st.n===0?"없음":st.n+"개"}</td><td>${Math.round(force())}kg</td><td>${st.p}명</td><td>${fmt(st.rope)}</td>`;
+  tb.appendChild(tr);
+}
+
+function tick(t){
+  if(!holding)return;
+  const dt=Math.min(.05,(t-last)/1000); last=t;
+  if(enough()&&!st.done){
+    st.rope+=ROPE_SPEED*dt; st.lift=Math.min(TARGET,st.rope/ma());
+    if(st.lift>=TARGET){st.rope=TARGET*ma();st.done=true;holding=false;logRow();}
+    render();
+  }else if(!enough()){
+    const pull=document.getElementById("pull"); pull.animate?.([{transform:"translateX(0)"},{transform:"translateX(-6px)"},{transform:"translateX(6px)"},{transform:"translateX(0)"}],{duration:250});
+    holding=false; return;
+  }
+  if(holding)requestAnimationFrame(tick);
+}
+const pull=document.getElementById("pull");
+function start(e){e.preventDefault();if(pull.disabled)return;holding=true;pull.classList.add("on");last=performance.now();requestAnimationFrame(tick);}
+function stop(){holding=false;pull.classList.remove("on");}
+pull.addEventListener("pointerdown",start);
+["pointerup","pointerleave","pointercancel"].forEach(ev=>pull.addEventListener(ev,stop));
+pull.addEventListener("keydown",e=>{if((e.key===" "||e.key==="Enter")&&!holding)start(e);});
+pull.addEventListener("keyup",e=>{if(e.key===" "||e.key==="Enter")stop();});
+pull.addEventListener("contextmenu",e=>e.preventDefault());
+document.getElementById("reset").addEventListener("click",()=>{resetLift();render();});
+render();
+</script>
+</body>
+</html>
